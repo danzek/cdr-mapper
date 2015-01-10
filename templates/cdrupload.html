@@ -1,0 +1,41 @@
+{% extends "master.html" %}
+
+{% block breadcrumbs %}
+    <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>
+            Main
+            &nbsp;&nbsp;>&nbsp;&nbsp;
+            Case Information
+            &nbsp;&nbsp;>&nbsp;&nbsp;
+            Tower Data
+            &nbsp;&nbsp;>&nbsp;&nbsp;
+            CDR Data
+        </strong>
+    </p>
+{% endblock %}
+
+{% block page_title %}Upload CDR Data{% endblock %}
+
+{% block body %}
+    <p>
+        Upload the CSV file containing the call detail record (CDR) data <em>with headers as the first row</em>.
+    </p>
+    <form method="POST" action="{{ url_for('upload_cdrs', case_id=cid, filename=fn) }}" class="dark-matter" enctype="multipart/form-data">
+        <h3>Upload CDR Data</h3>
+            <span>
+                Please select the CSV file containing the CDR data.
+            </span>
+
+        <label>
+            <span>CDR Data File :</span>
+            <input type="file" id="cdrs" name="cdrs" accept="text/csv">
+        </label>
+
+        <label>
+            <span>&nbsp;</span>
+            <input type="submit" class="button" value="Upload" />
+            <div style="font-weight: bold; color: yellow;">{{ message }}</div>
+        </label>
+    </form>
+{% endblock %}

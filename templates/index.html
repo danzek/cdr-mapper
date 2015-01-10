@@ -1,0 +1,86 @@
+{% extends "master.html" %}
+
+{% block breadcrumbs %}<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>Main</strong></p>{% endblock %}
+
+{% block page_title %}Instructions{% endblock %}
+
+{% block body %}
+    <p>
+        Complete the basic case information, then select the file containing tower data, then the file containing
+        CDR data. The final product will be a map file that can be opened in
+        <a href="https://www.google.com/earth/">Google Earth</a>.
+    </p>
+    <h3>
+        <strong><a href="{{ url_for('case_form') }}">Enter Basic Case Information --></a></strong>
+    </h3>
+
+    &nbsp;<br />
+    <hr />
+    &nbsp;<br />
+
+    <h2>Mapping Call Detail Records</h2>
+    <p>The methodology for mapping CDR location data (historical cell site and sector analysis) varies for every carrier and is continually changing, so this will only be a high-level, general document for how it is done. This tool will only work with a limited set of record formats and some initial data formatting may need to be done by an analyst prior to being able to get this tool to plot location data.</p>
+    <h3>Training</h3>
+    <p>I recommend that anyone doing this obtains formal training to do so, because you will most likely by asked to testify about your analysis and having some form of training will look a lot better in court than having none whatsoever. Even so, in UNITED STATES V. ANTONIO EVANS, 892 F. Supp2d. 949 (N.D. ILL. 2012), U.S. District Judge Joan H. Lefkow of Chicago wrote in an opinion and order in August 2012 "that using Google Maps to plot these locations does not require scientific, technical, or other specialized knowledge and that these exhibits are admissible through lay opinion testimony under Rule 701."</p>
+    <h3>Terminology</h3>
+    <h4>Networks</h4>
+    <ul>
+        <li><b>GSM:</b> Global System for Mobile Communications (originally Groupe Spécial Mobile). Devices using these networks generally require a SIM card (currently all AT&amp;T and T-Mobile devices in the US) and use TDMA technology.</li>
+        <li><b>CDMA:</b> Code Division Multiple Access. Most networks in the US that do not require SIM cards (although some carriers operate both CDMA and GSM networks, such as Verizon).</li>
+        <li><b>iDEN:</b> Integrated Digital Enhanced Network. This is commonly identified as push-to-talk (PTT) technology (old Nextel in the US). Uses speech compression and TDMA technology.</li>
+        <li><b>TDMA:</b> Time Division Multiple Access. Uses multiple transmitters to provide time-division multiplexing.</li>
+    </ul>
+    <h4>Device-Specific</h4>
+    <p><b>GSM</b></p>
+    <ul>
+        <li><b>SIM:</b> Subscriber Identity Module (card in phone). Also mini-SIM, micro-SIM (refers to size).</li>
+        <li><b>ICCID:</b> International Circuit Card Identifier. This is the number printed on the SIM card (may be cut off of mini- and micro-SIMs) that is essentially a serial number for the SIM card itself.</li>
+        <li><b>IMSI:</b> International Mobile Subscriber Identifier. This number is contained <i>within</i> the SIM card (you will need a reader and software to get it) and uniquely identifies the subscriber.</li>
+        <li><b>IMEI:</b> International Mobile Equipment Identifier. Uniquely identifies device on carrier network. You can usually find this under the battery or in device settings.</li>
+        <li><b>MSISDN:</b> Mobile Subscriber Integrated Services Digital Network-Number. There are actually other interpretations of this acronym; no one is quite sure which one is correct, but this is the most common. This is the device phone number.</li>
+    </ul>
+    <p><b>CDMA</b></p>
+    <ul>
+        <li><b>MEID:</b> Mobile Equipment Identifier. This was formerly the <b>electronic serial number (ESN)</b>, so you will sometimes see these acronyms used interchangeably. Uniquely identifies device on carrier network. You can usually find this under the battery or in device settings. The number is generally given in hexadecimal (hex) or decimal (dec), or both.</li>
+        <li><b>MIN:</b> Mobile Identification Number. Uniquely identifies the subscriber/device pair. This looks like a phone number but may not be the actual device's phone number (especially when the device has been ported).</li>
+        <li><b>MDN:</b> Mobile Directory Number. This is the device phone number.</li>
+    </ul>
+    <h4>Domain-Specific</h4>
+    <p>Different carriers will actually use different terms. Usually they will give a key along with CDR results explaining the meaning of terms unique to them. As such, these are only general terms being used to represent these concepts. The actual terms used may vary.</p>
+    <ul>
+        <li><b>Calling Number:</b> The phone number that initiated the call or other transmission.</li>
+        <li><b>Called Number:</b> The phone number being called. This is <i>not</i> always the number that was dialed by the device user. This may be a number used internally by the carrier for forwarding or routing.</li>
+        <li><b>Dialed Digit Number:</b> This is the phone number that the caller actually entered into the keypad of the calling device.</li>
+        <li><b>Call Direction:</b> The direction of the call (e.g. inbound, outbound, voicemail, mobile to mobile, forwarded, routed, etc.).</li>
+        <li><b>Network Element:</b> A manageable logical entity uniting one or more physical towers. This usually refers to the switching equipment that handled the call.</li>
+        <li><b>Switch: </b>Connects devices, typically using packet switching. The switch name often varies from the network element name, and often may even vary between those used in the CDR data vs. those used in the tower list(s). You will have to call the carrier and speak to a legal compliance analyst to determine which names correspond. Some carriers also provide a <b>repoll number</b> that corresponds to a specific switch used to handle a call. Usually named by the basic geographic area it covers.</li>
+        <li><b>Cell Site:</b> A cellular 'tower' on a carrier's network where antennas and other electronics communication equipment is located. On a GSM network, the correct term is <b>base transceiver station (BTS)</b>. Most networks simply use the term 'cell site' or 'cell tower' to refer to these.</li>
+        <li><b>Cell Site Sector:</b> Most cell sites have three antennae providing 360 degrees of cellular coverage. The coverage area (sometimes referred to as the "radius") of each antenna is thus generally 120 degrees. A specific antenna and its coverage area forms a sector. A sector is sometimes referred to as a 'cell face.'</li>
+        <li><b>Azimuth:</b> An angular measurement in a spherical coordinate system. The standard reference plane used by cellular carriers is measured in degrees given a 360 degree horizontal radius. The azimuth corresponds to the angle in which a specific sector is facing. Thus the azimuth is the direction a specific antenna on a cell tower is pointing (e.g. 0 or 360 degrees is a sector facing north, 90 degrees is east, 180 degrees is south, and 270 degrees is west).</li>
+        <li><b>Originating Cell Site:</b> The cell site that the device initially connected to in order to handle the call. Sometimes simply referred to as 'first serving cell site.'</li>
+        <li><b>Terminating Cell Site:</b> The cell site that the device was connected to when the call ended. Sometimes simply referred to as 'last serving cell site.'</li>
+        <li><b>SMS:</b> Short Message Service. A traditional text message. Many carriers limit SMS messages to 160 characters (this is why longer messages get broken up into 1 of 2, 2 of 2, etc.).</li>
+        <li><b>MMS:</b> Multimedia Messaging Service. An extension of SMS technology that allows text messages to send data files such as pictures, videos, and songs.</li>
+        <li><b>iMessage:</b> An instant messaging service developed by Apple. This is like text messaging on Apple devices but is sent over data through Apple's iCloud network rather than through the carrier (and so these generally don't show up on call detail records).</li>
+        <li><b>FaceTime:</b> A video phone call service developed by Apple. This is a video-conference call that is sent over data using Apple iCloud's network rather than through the carrier (and so these generally don't show up on call detail records).</li>
+        <li><b>Voice:</b> When a content type is labelled "Voice" on a call detail record (CDR), this means that it was a traditional phone call.</li>
+    </ul>
+    <p> </p>
+    <h3>Theory</h3>
+    <p>Given that a cell site covers a 360 degree area and contains 3 sectors, each sector will cover an approximately 120 degree area. <img alt="Cell Site Sectors" style="float: right;" src="{{ url_for('static', filename='tower.jpg') }}" />The azimuth corresponding to a specific sector is the <i>center </i>of the antenna, i.e. the direction it is facing. Thus to determine the approximate coverage area, you will subtract 60 degrees and add 60 degrees to the azimuth to determine the azimuths of each edge of the estimated coverage area. Keep in mind that radio propagation depends on numerous factors and thus these edges are only an <i>estimate</i> of the coverage area. It <i>is</i> possible for a device to connect to a sector without being  in its 120 degree area, but this is rare (an example is knife-edge  propagation / edge diffraction).</p>
+    <p>The range from the cell site to the device <i>cannot be estimated</i> without expert calculations and testing (see "Caution" section below).</p>
+    <p>The goal of mapping CDR location data is to plot the location of each cell site (typically given as latitude and longitude) for each call placed at a fixed point in time where location data is available, for the purpose of estimating the location of the target device. The azimuth for each sector must then be correlated for each call to determine the most likely direction of the target device relative to the cell site that handled the call. This analysis must then be presented to the investigator(s) and deputy prosecuting attorney in a way that is accurate, relatively easy-to-understand, and easily presented in court. For instance, Google Earth is a free tool that makes viewing maps fairly easy, but it requires an Internet connection. This software cannot be used in a courtroom that does not have Internet access. Communicate with the prosecutor.</p>
+    <h3>Caution</h3>
+    <p>Most objections to the admissibility, relevance, and authenticity of  location data associated with call detail records (CDRs) are associated with attempts to estimate the range from the device to the cell site.  Unless you receive special training to do so (in RF physics and  advanced cellular networking theory, including the inner-workings of  proprietary carrier technology), range estimations and/or calculations should  be avoided in your analysis.</p>
+    <h3>Granularization Theory</h3>
+    <p>The "granulization theory" states that the range of a device from a given tower can be estimated based on that tower’s location relative to other towers, and that the coverage overlap of towers can be estimated based on the other towers’ locations. The theory (faultily) makes the assumption that a device will usually connect to the closest tower.</p>
+    <p>I've actually been asked by a defense attorney whether I used this theory in my analysis. It has been covered in most legal journals and may come up in court, so you should be aware of it and <i>avoid making the same mistake(s) in your analysis</i>. In UNITED STATES V. ANTONIO EVANS, 892 F. Supp2d. 949 (N.D. ILL. 2012), prosecutors tried to show that defendant Antonio EVANS placed a phone call from a location where a victim was allegedly being held for ransom. U.S. District Judge Joan H. Lefkow of Chicago wrote in an opinion and order in August 2012 that "multiple factors can affect the signal strength of a tower" and that an FBI special agent’s "chosen methodology has received no scrutiny outside the law enforcement community." As a result, the court concluded that the government had not demonstrated that the cell site and sector location data testimony was reliable.<br /><br />Call detail records can tell whether a person was in the coverage area of a given tower, but where within that coverage area and the distance from the tower is difficult to scientifically demonstrate. <a class="external-link" href="http://www.abajournal.com/magazine/article/prosecutors_use_of_mobile_phone_tracking_is_junk_science_critics_say/">An ABA Journal article</a> discusses this, and you can read Judge Lefkow’s opinion and order at <a class="external-link" href="http://celltowertracking.com/Daubert_Order.pdf">http://celltowertracking.com/Daubert_Order.pdf</a>.</p>
+    <p>Here are a few important notes (highlights) I’ve gleaned while reading through the opinion and order:</p>
+    <ul>
+        <li>The admissibility and relevance of CDR location data is not entirely in jeopardy. The "granularization theory" used by FBI SA Raschke in this trial has failed the Daubert test and is considered scientifically unreliable.</li>
+        <li>The court pointed out that "estimating the coverage area of radio frequency waves requires more than just training and experience; it requires scientific calculations to take into account factors that can affect coverage.  Special Agent Raschke presented no scientific calculations and did not consider a variety of relevant factors."</li>
+        <li>The court determined "that using Google Maps to plot these locations does not require scientific, technical, or other specialized knowledge and that these exhibits are admissible through lay opinion testimony under Rule 701."</li>
+    </ul>
+    <p> </p>
+    <p>The main takeaway from this is that you should not hesitate to use CDR location data as evidence that a device was connected to a particular tower at a specific moment in time, but don’t confidently attempt to estimate the coverage area of any specific towers solely on the basis of cell site and sector location data. It is difficult to determine the distance of a device from a given tower, and any methods used to estimate a specific range need to have widespread acceptance within the scientific community as well as hold up under scrutiny outside the law enforcement community (i.e. any proposed methodology must pass the Daubert test).</p>
+{% endblock %}

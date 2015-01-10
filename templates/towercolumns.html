@@ -1,0 +1,111 @@
+{% extends "master.html" %}
+
+{% block breadcrumbs %}
+    <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <strong>
+            Main
+            &nbsp;&nbsp;>&nbsp;&nbsp;
+            Case Information
+            &nbsp;&nbsp;>&nbsp;&nbsp;
+            Tower Data
+        </strong>
+    </p>
+{% endblock %}
+
+{% block page_title %}Import Tower Data{% endblock %}
+
+{% block body %}
+    <div id="loading" style="display: none;">
+        <p>
+            Please wait while tower data is imported. This may take several minutes depending on how many towers you are
+            importing. Do not click import again, refresh this page, or navigate away from it or your progress will be
+            lost.
+        </p>
+        <p><div align="center">
+            <img src="{{ url_for('static', filename='progress_loader.gif') }}" width="250" height="250" border="0" />
+        </div></p>
+        &nbsp;<br />&nbsp;<br />
+    </div>
+    <p>
+        Select which column from the tower data corresponds with each recognized data type.
+    </p>
+    <form method="POST" action="{{ url_for('import_towers', case_id=cid, filename=fn) }}" class="dark-matter" data-ajax="false" enctype="multipart/form-data">
+        <h3>Import Cell Sites / Tower Data</h3>
+            <span>
+                Please select which column from the tower data corresponds with each recognized data type.
+            </span>
+
+        <label>
+            <span>Case Number :</span>
+            <input id="casenum" type="text" name="casenum" value="{{ casenum }}" disabled />
+        </label>
+
+        <label>
+            <span>Tower / Cell Site ID :</span>
+            <select name="cellsite" id="cellsite">
+                <option value="-1">---Select Column---</option>
+                {% for option in header_list %}
+                    {{ option|safe }}
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Latitude :</span>
+            <select name="latitude" id="latitude">
+                <option value="-1">---Select Column---</option>
+                {% for option in header_list %}
+                    {{ option|safe }}
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Longitude :</span>
+            <select name="longitude" id="longitude">
+                <option value="-1">---Select Column---</option>
+                {% for option in header_list %}
+                    {{ option|safe }}
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Sector :</span>
+            <select name="sector" id="sector">
+                <option value="-1">---Select Column---</option>
+                {% for option in header_list %}
+                    {{ option|safe }}
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>Azimuth :</span>
+            <select name="azimuth" id="azimuth">
+                <option value="-1">---Select Column---</option>
+                {% for option in header_list %}
+                    {{ option|safe }}
+                {% endfor %}
+            </select>
+        </label>
+
+        <label>
+            <span>&nbsp;</span>
+            <input type="submit" class="button" value="Import" />
+            <div style="font-weight: bold; color: yellow;">{{ message }}</div>
+        </label>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="application/javascript">
+        $('form').on('submit', function() {
+            $('#loading').show();
+            e.preventDefault();
+            this.submit();
+        })
+    </script>
+{% endblock %}
