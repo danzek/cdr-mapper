@@ -123,6 +123,11 @@ class TollsCase(object):
 
     @staticmethod
     def get_case_number(pk):
+        """
+        Returns case number given primary key of TollsCase record
+        :param pk: primary key of TollsCase record
+        :return: case number as string
+        """
         db = Database()
         conn = sqlite3.connect(db.database_filename)
         conn.text_factory = str
@@ -136,6 +141,11 @@ class TollsCase(object):
 
     @staticmethod
     def get_case_details(pk):
+        """
+        Gets details of TollsCase given primary key
+        :param pk: primary key of TollsCase record
+        :return: dictionary containing TollsCase fields
+        """
         db = Database()
         conn = sqlite3.connect(db.database_filename)
         conn.text_factory = str
@@ -275,6 +285,12 @@ class CDR(object):
 
     @staticmethod
     def get_cdr_details(pk, case_id):
+        """
+        Gets details of CDR given primary key
+        :param pk: primary key of CDR record
+        :param case_id: primary key of TollsCase object (case_unique_id)
+        :return: dictionary containing CDR fields
+        """
         db = Database()
         conn = sqlite3.connect(db.database_filename)
         conn.text_factory = str
@@ -323,6 +339,12 @@ class CDR(object):
 
     @staticmethod
     def generate_cdata(pk, case_id):
+        """
+        Generates CDATA (XML Character Data) that pops up in description of points on the map
+        :param pk: primary key of CDR record
+        :param case_id: primary key of TollsCase object (case_unique_id)
+        :return: CDATA as string (including header and footer CDATA tags)
+        """
         cdr_details = CDR.get_cdr_details(pk, case_id)
         tower_details = Tower.get_tower_location(case_id, cdr_details['Cell Site ID'], cdr_details['Sector'])
         cdata = """
@@ -465,12 +487,20 @@ class Report(object):
         return ''.join(('Report(', repr(self.case_id), ')'))
 
     def get_report_name(self):
+        """
+        Ensures case number can be used in file name without problematic characters
+        :return: file name of map/report with .kml extension
+        """
         valid_chars = "-%s%s" % (string.ascii_letters, string.digits)
         case_number = TollsCase.get_case_number(self.case_id)
         fn = ''.join([c for c in case_number if c in valid_chars])
         return ''.join([fn, '.kml'])
 
     def generate_map(self):
+        """
+        Generates kml map file, linking tower and CDR data as needed
+        :return: file name of map file
+        """
         case_details = TollsCase.get_case_details(self.case_id)
         kml_header = """
         <?xml version="1.0" encoding="UTF-8" ?>
@@ -622,6 +652,11 @@ class Report(object):
 
     @staticmethod
     def strip_whitespace(s):
+        """
+        Removes excess newlines, tabs, and spaces from XML for smaller file size
+        :param s: string to be cleaned up
+        :return: cleaned up string
+        """
         return ' '.join(s.split())
 
     @staticmethod

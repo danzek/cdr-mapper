@@ -25,6 +25,11 @@ app = flask.Flask(__name__)
 
 
 def allowed_file(filename):
+    """
+    Checks if file name is allowed based on ALLOWED_EXTENSIONS
+    :param filename: file name being checked
+    :return: boolean -- true or false
+    """
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 @app.route('/')
@@ -215,10 +220,20 @@ def serve_report(reportname=None):
 
 
 def return_null_value(row, column_index):
+    """
+    Use blank strings for empty data fields
+    :param row: row of data
+    :param column_index: index of column being checked in row
+    :return: if field in row with given valid index has data, return it; otherwise return empty string.
+    """
     return '' if column_index < 0 else row[column_index]
 
 
 def initialize_database():
+    """
+    Initializes database.
+    :return: prints status of database to screen
+    """
     database = Database()
     if not os.path.isfile(database.database_filename):
         database.create_tables()
