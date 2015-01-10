@@ -12,6 +12,7 @@ Currently it accepts CDR data where the cell sites / towers and CDRs are provide
 
  - Support simpler formats where tower location data are available in the same file and row as each CDR.
  - Add option to plot both originating and terminating cell sites / towers.
+ - Parse date/time fields as date objects to allow for time span slider.
  - Accept data where towers and CDRs span multiple network elements / switches, allowing user to specify which network element names correspond to specific switch names.
  - Visually show azimuth and approximate sector coverage in map file (without committing errors of the 'granularization theory').<sup>1</sup>
 
