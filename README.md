@@ -1,8 +1,10 @@
 # CDR Mapper
 
-A web application that plots towers from call detail record (CDR) data to a map file (kml).
+An application that plots towers from call detail record (CDR) data to a map file (kml).
 
-Currently it accepts CDR data where the cell sites / towers and CDRs are provided in separate files but where the cell site identifiers are unique to a single network element. See 'future goals' for expansion plans for additional types of data.
+Currently it accepts CDR data where the cell sites / towers and CDRs are provided in separate files or where they are in the same row, but where the cell site identifiers are unique to a single network element. See 'future goals' for expansion plans for additional types of data.
+
+This branch uses `easy_gui v0.97` to provide a simple GUI interface. The master branch is a Flask web application.
 
 ## License
 
