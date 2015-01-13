@@ -16,3 +16,5 @@ cdr-mapper/.idea/vcs.xml
 cdr-mapper/.idea/workspace.xml
 
 cdr-mapper/models.pyc
+
+*.pyc
