@@ -3,9 +3,11 @@
 Data models for CDR mapping.
 """
 
+import cPickle
 import os
 import sqlite3
 import string
+
 
 __author__ = "Dan O'Day"
 __license__ = "MIT"
@@ -66,15 +68,10 @@ class Database(object):
             create table CDR (
               CDR_ID integer primary key autoincrement not null,
               CDR_Case_ID integer not null,
-              CDR_Calling_Number varchar null,
               CDR_Called_Number varchar not null,
-              CDR_Dialed_Digits varchar null,
-              CDR_Call_Direction varchar null,
-              CDR_Start_Date varchar null,
-              CDR_End_Date varchar null,
-              CDR_Duration varchar null,
               CDR_Cell_Site_ID varchar not null,
-              CDR_Sector varchar not null
+              CDR_Sector varchar not null,
+              CDR_Other blob null
             );
         """)
 
@@ -233,18 +230,12 @@ class CDR(object):
     """
     Call Detail Record (CDR) object
     """
-    def __init__(self, tolls_case_id, calling_number, called_number, dialed_digits, call_direction, start_date,
-                 end_date, duration, cell_site_id, sector):
+    def __init__(self, tolls_case_id, called_number, cell_site_id, sector, other_fields):
         self.case_id = int(tolls_case_id)  # TollsCase object case_unique_id property
-        self.calling_number = calling_number
         self.called_number = called_number
-        self.dialed_digits = dialed_digits
-        self.call_direction = call_direction
-        self.start_date = start_date
-        self.end_date = end_date
-        self.duration = duration
         self.cell_site_id = cell_site_id
         self.sector = sector
+        self.other_fields = other_fields
         self.cdr_unique_id = None
 
     def __str__(self):
@@ -256,15 +247,10 @@ class CDR(object):
     def __repr__(self):
         return ''.join(('CDR(',
                         repr(self.case_id), ', ',
-                        repr(self.calling_number), ', ',
                         repr(self.called_number), ', ',
-                        repr(self.dialed_digits), ', ',
-                        repr(self.call_direction), ', ',
-                        repr(self.start_date), ', ',
-                        repr(self.end_date), ', ',
-                        repr(self.duration), ', ',
                         repr(self.cell_site_id), ', ',
-                        repr(self.sector), ')'))
+                        repr(self.sector), ', ',
+                        repr(self.other_fields), ')'))
 
     def save(self):
         """
@@ -274,11 +260,9 @@ class CDR(object):
         conn = sqlite3.connect(db.database_filename)
         conn.text_factory = str
         cur = conn.execute("""
-            insert into CDR (CDR_Case_ID, CDR_Calling_Number, CDR_Called_Number, CDR_Dialed_Digits, CDR_Call_Direction,
-            CDR_Start_Date, CDR_End_Date, CDR_Duration, CDR_Cell_Site_ID, CDR_Sector) values
-            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""", (self.case_id, self.calling_number, self.called_number,
-                                                 self.dialed_digits, self.call_direction, self.start_date,
-                                                 self.end_date, self.duration, self.cell_site_id, self.sector))
+            insert into CDR (CDR_Case_ID, CDR_Called_Number, CDR_Cell_Site_ID, CDR_Sector, CDR_Other) values
+            (?, ?, ?, ?, ?);""", (self.case_id, self.called_number, self.cell_site_id, self.sector,
+                                  sqlite3.Binary(cPickle.dumps(self.other_fields, cPickle.HIGHEST_PROTOCOL))))
         conn.commit()
         self.cdr_unique_id = int(cur.lastrowid)  # set unique cdr id to primary key int value from db
         conn.close()
@@ -302,15 +286,10 @@ class CDR(object):
         conn.close()
         return {
             'Case ID': record['CDR_Case_ID'],
-            'Calling Number': record['CDR_Calling_Number'],
             'Called Number': record['CDR_Called_Number'],
-            'Dialed Digits': record['CDR_Dialed_Digits'],
-            'Call Direction': record['CDR_Call_Direction'],
-            'Start Date': record['CDR_Start_Date'],
-            'End Date': record['CDR_End_Date'],
-            'Duration': record['CDR_Duration'],
             'Cell Site ID': record['CDR_Cell_Site_ID'],
-            'Sector': record['CDR_Sector']
+            'Sector': record['CDR_Sector'],
+            'Other Fields:': dict(cPickle.loads(str(record['CDR_Other'])))
         }
 
     @staticmethod
