@@ -86,7 +86,7 @@ def import_tower_data(case_id):
     azimuth = None
 
     easygui.msgbox(msg=' '.join(["Your cell site / tower data must be in CSV format and have the following REQUIRED",
-                                "fields: Cell Site ID, Latitude, Longitude, Sector, and Azimuth"]), title="Towers")
+                                "fields: Cell Site ID, Latitude, Longitude, Sector, and Azimuth."]), title="Towers")
 
     tower_file = get_file("Please select the CSV file containing the tower data.")
     headers = get_csv_headers(tower_file)
@@ -136,7 +136,60 @@ def import_tower_data(case_id):
 
 
 def import_cdrs(case_id):
-    pass
+    called_number = None
+    cell_site_id = None
+    sector = None
+    other_fields = None
+
+    easygui.msgbox(msg=' '.join(["Your CDR data must be in CSV format and have the following REQUIRED fields:",
+                                 "Cell Site ID, Called Number, and Sector."]), title="CDRs")
+
+    cdr_file = get_file("Please select the CSV file containing the CDR data.")
+    headers = get_csv_headers(cdr_file)
+
+    # get required CDR fields
+    while not called_number:
+        called_number = easygui.choicebox(' '.join(["Select the column heading that corresponds to the called (or",
+                                                    "non-target) number."]), title="Get Number", choices=headers)
+
+    while not cell_site_id:
+        cell_site_id = easygui.choicebox("Select the column heading that corresponds to the cell site / tower ID.",
+                                         title='Get Cell Site ID', choices=headers)
+
+    while not sector:
+        sector = easygui.choicebox("Select the column heading that corresponds to the sector.",
+                                   title="Get Sector", choices=headers)
+
+    while not other_fields:
+        other_fields = easygui.multchoicebox(' '.join(["Select all of the columns you wish to appear in the",
+                                                       "description for each point on the map."]),
+                                             title="Get Report Fields", choices=headers)
+
+    # populate variables with index for each header column
+    i_called_number = headers.index(called_number)
+    i_cell_site_id = headers.index(cell_site_id)
+    i_sector = headers.index(sector)
+    knowns = [i_called_number, i_cell_site_id, i_sector]
+    d_other_fields = {of: headers.index(of) for of in other_fields if headers.index(of) not in knowns}  # remove knowns
+
+    easygui.msgbox(msg=' '.join(["Importing the CDRs may take several minutes. The application will run in the",
+                                 "background while the CDR import process is running. A message will be displayed",
+                                 "to you once the import is finished. Click OK to begin the import."]),
+                   title="Loading Warning")
+
+    with open(cdr_file, 'rb') as f:
+        f_csv = csv.reader(f)
+        discarded_headers = next(f_csv)
+
+        for row in f_csv:
+            report_fields = {}
+            for k, v in d_other_fields:  # ValueError: need more than 0 values to unpack (TODO: fix)
+                report_fields[k] = row[v]
+
+            cdr = CDR(case_id, row[i_called_number], row[i_cell_site_id], row[i_sector], report_fields)
+            cdr.save()
+
+    easygui.msgbox(msg='CDRs imported successfully.', title="Success")
 
 
 def parse_same_file(case_id):
