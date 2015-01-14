@@ -18,3 +18,4 @@ cdr-mapper/.idea/workspace.xml
 cdr-mapper/models.pyc
 
 *.pyc
+cdr-mapper/cdr_data.db

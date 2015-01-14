@@ -170,7 +170,8 @@ def import_cdrs(case_id):
     i_cell_site_id = headers.index(cell_site_id)
     i_sector = headers.index(sector)
     knowns = [i_called_number, i_cell_site_id, i_sector]
-    d_other_fields = {of: headers.index(of) for of in other_fields if headers.index(of) not in knowns}  # remove knowns
+    d_other_fields = {of: headers.index(of) for of in other_fields if headers.index(of) not in knowns
+                      and of.strip() != ''}  # remove knowns
 
     easygui.msgbox(msg=' '.join(["Importing the CDRs may take several minutes. The application will run in the",
                                  "background while the CDR import process is running. A message will be displayed",
@@ -183,7 +184,7 @@ def import_cdrs(case_id):
 
         for row in f_csv:
             report_fields = {}
-            for k, v in d_other_fields:  # ValueError: need more than 0 values to unpack (TODO: fix)
+            for k, v in d_other_fields.iteritems():
                 report_fields[k] = row[v]
 
             cdr = CDR(case_id, row[i_called_number], row[i_cell_site_id], row[i_sector], report_fields)
