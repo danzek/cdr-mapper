@@ -22,6 +22,11 @@ RESOURCES_FOLDER = r'C:\Users\dday\PycharmProjects\cdr-mapper\cdr-mapper\resourc
 
 
 def validate_fields(fields):
+    """
+    Check if all fields in list have values
+    :param fields: list containing values to check
+    :return: True if all fields have values, False otherwise
+    """
     for field in fields:
         if field.strip() == '' or not field:
             return False
@@ -29,6 +34,10 @@ def validate_fields(fields):
 
 
 def get_case_details():
+    """
+    Get case information
+    :return: primary key of TollsCase entry
+    """
     form_fields = ['Case Number', 'Agency', 'Agent', 'Analyst', 'Target Number']
     case_details = []
     valid = False
@@ -54,6 +63,11 @@ def get_case_details():
 
 
 def get_csv_headers(path):
+    """
+    Extract headers from CSV file
+    :param path: file path to CSV file
+    :return: list containing headers in original order
+    """
     headers = []
     i = 0
     while not headers:
@@ -72,13 +86,35 @@ def get_csv_headers(path):
 
 
 def get_file(message):
+    """
+    Get file
+    :param message: msg displayed to user in dialog window
+    :return: file path
+    """
     f = None
     while not f:
         f = easygui.fileopenbox(msg=message, title="Select File", filetypes=["*.txt", "*.csv"])
     return f
 
 
+def get_save_location(message):
+    """
+    Get location to save file
+    :param message: msg displayed to user in dialog window
+    :return: directory path
+    """
+    d = None
+    while not d:
+        d = easygui.diropenbox(msg=message, title="Select Save Location")
+    return d
+
+
 def import_tower_data(case_id):
+    """
+    Imports tower data when towers are separate from CDR data
+    :param case_id: primary key of case
+    :return: n/a
+    """
     cell_site = None
     latitude = None
     longitude = None
@@ -136,6 +172,11 @@ def import_tower_data(case_id):
 
 
 def import_cdrs(case_id):
+    """
+    Imports CDR data when CDRs are separate from tower data
+    :param case_id: primary key of case
+    :return: n/a
+    """
     called_number = None
     cell_site_id = None
     sector = None
@@ -194,17 +235,51 @@ def import_cdrs(case_id):
 
 
 def parse_same_file(case_id):
+    """
+    Handles report when CDRs and cell sites / towers are in same file
+    :param case_id: primary key of case
+    :return: n/a
+    """
     data = get_file("Please select the CSV file containing the CDR and tower data.")
     headers = get_csv_headers(data)
+    # TODO -- select headers from imported data
 
 
 def parse_two_files(case_id):
+    """
+    Handles report when CDRs and cell sites / towers are in separate files
+    :param case_id: primary key of case
+    :return: n/a
+    """
     import_tower_data(case_id)
     import_cdrs(case_id)
+    save_location = get_save_location("Please select the folder where you want to save the report.")
+    final_report = Report(case_id, save_location)
+
+    report_name = None
+    i = 0
+    while not report_name:
+        try:
+            i += 1
+            report_name = final_report.generate_map()
+        except IOError:
+            easygui.msgbox(msg="There was an error writing the report file.")
+            report_name = get_file("Please select the location where you wish to save the report again.")
+            if i > 1:
+                easygui.exceptionbox()
+                sys.exit(0)
+
+    easygui.msgbox(msg=' '.join(["Report successfully saved to", report_name]), title="Success")
 
 
 def main():
+    """
+    Main routine: shows disclaimer, initializes database, gets case details, determines which files to parse
+    :return: n/a
+    """
     easygui.buttonbox(msg=' '.join(['CDR Mapper\n', '--------------------------\n',
+                                    'CDR Mapper will plot CDR and cell site / tower data in a map file that can be',
+                                    'opened using Google Earth.\n\n'
                                     'CDR Mapper is provided under the terms of the MIT License:\n\nTHIS SOFTWARE IS',
                                     'PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT',
                                     'NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR',
@@ -227,13 +302,25 @@ def main():
 
 def initialize_database():
     """
-    Initializes database.
-    :return: prints status of database to console
+    Initializes database
+    :return: destroys existing database and creates new one for new case
     """
     database = Database()
     if not os.path.isfile(database.database_filename):
         database.create_tables()
-        easygui.msgbox('Database tables created successfully. Filename: {fn}'.format(fn=database.database_filename))
+    else:
+        destroy_database()
+        database.create_tables()
+
+
+def destroy_database():
+    """
+    Delete sqlite database
+    :return: database is deleted
+    """
+    database = Database()
+    if os.path.isfile(database.database_filename):
+        os.remove(database.database_filename)
 
 
 if __name__ == '__main__':

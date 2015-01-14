@@ -289,7 +289,7 @@ class CDR(object):
             'Called Number': record['CDR_Called_Number'],
             'Cell Site ID': record['CDR_Cell_Site_ID'],
             'Sector': record['CDR_Sector'],
-            'Other Fields:': dict(cPickle.loads(str(record['CDR_Other'])))
+            'Other Fields': dict(cPickle.loads(str(record['CDR_Other'])))
         }
 
     @staticmethod
@@ -326,8 +326,8 @@ class CDR(object):
         """
         cdr_details = CDR.get_cdr_details(pk, case_id)
         tower_details = Tower.get_tower_location(case_id, cdr_details['Cell Site ID'], cdr_details['Sector'])
-        cdata = """
-        <![CDATA[ <table border='0' cellspacing='0' cellpadding='0'>
+        cdata_header = "<![CDATA[ <table border='0' cellspacing='0' cellpadding='0'>"
+        cdata_fixed = """
             <tr>
                 <td colspan='2' style='vertical-align: top; padding-left: 10px; padding-right: 10px; white-space: nowrap;'>
                     <b>{cdr_id}</b>
@@ -338,60 +338,12 @@ class CDR(object):
                     &nbsp;
                 </td>
             </tr>
-            <tr bgcolor='#ddffdd' >
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Calling Number</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {callingnum}
-                </td>
-            </tr>
-            <tr>
+            <tr bgcolor='#ddffdd'>
                 <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
                     <b>Called Number</b>
                 </td>
                 <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
                     {callednum}
-                </td>
-            </tr>
-            <tr bgcolor='#ddffdd' >
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Dialed Number</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {dialed}
-                </td>
-            </tr>
-            <tr>
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Call Direction</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {direction}
-                </td>
-            </tr>
-            <tr bgcolor='#ddffdd' >
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Start Date</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {start}
-                </td>
-            </tr>
-            <tr>
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>End Date</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {end}
-                </td>
-            </tr>
-            <tr bgcolor='#ddffdd' >
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Duration</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {duration}
                 </td>
             </tr>
             <tr>
@@ -433,21 +385,37 @@ class CDR(object):
                 <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
                     {longitude}
                 </td>
-            </tr>
-        </table> ]]>""".format(cdr_id=str(pk),
-                               callingnum=Report.xml_safe(cdr_details['Calling Number']),
-                               callednum=Report.xml_safe(cdr_details['Called Number']),
-                               dialed=Report.xml_safe(cdr_details['Dialed Digits']),
-                               direction=Report.xml_safe(cdr_details['Call Direction']),
-                               start=Report.xml_safe(cdr_details['Start Date']),
-                               end=Report.xml_safe(cdr_details['End Date']),
-                               duration=Report.xml_safe(cdr_details['Duration']),
-                               cellsite=Report.xml_safe(cdr_details['Cell Site ID']),
-                               sector=Report.xml_safe(cdr_details['Sector']),
-                               azimuth=Report.xml_safe(tower_details['Azimuth']),
-                               latitude=Report.xml_safe(tower_details['Latitude']),
-                               longitude=Report.xml_safe(tower_details['Longitude']))
-        return cdata
+            </tr>""".format(cdr_id=str(pk),
+                            callednum=Report.xml_safe(cdr_details['Called Number']),
+                            cellsite=Report.xml_safe(cdr_details['Cell Site ID']),
+                            sector=Report.xml_safe(cdr_details['Sector']),
+                            azimuth=Report.xml_safe(tower_details['Azimuth']),
+                            latitude=Report.xml_safe(tower_details['Latitude']),
+                            longitude=Report.xml_safe(tower_details['Longitude']))
+
+        # add other fields selected by user for inclusion in report
+        cdata_addtl = ""
+        i = 1
+        for k, v in cdr_details['Other Fields'].iteritems():
+            if i % 2 == 0:
+                tr_header = "<tr>"
+            else:
+                tr_header = "<tr bgcolor='#ddffdd'>"
+
+            tr_rest = """
+                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                    <b>{key}</b>
+                </td>
+                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                    {value}
+                </td>
+            </tr>""".format(key=Report.xml_safe(k), value=Report.xml_safe(v))
+
+            cdata_addtl += ''.join([tr_header, tr_rest])
+            i += 1
+
+        cdata_footer = "</table> ]]>"
+        return ''.join([cdata_header, cdata_fixed, cdata_addtl, cdata_footer])
 
 
 class Report(object):
@@ -478,7 +446,7 @@ class Report(object):
     def generate_map(self):
         """
         Generates kml map file, linking tower and CDR data as needed
-        :return: file name of map file
+        :return: file path of map file
         """
         case_details = TollsCase.get_case_details(self.case_id)
         kml_header = """
@@ -627,7 +595,7 @@ class Report(object):
 
             f.write(self.strip_whitespace(kml_footer))
 
-        return self.report_name
+        return os.path.join(self.report_path, self.report_name)
 
     @staticmethod
     def strip_whitespace(s):
