@@ -1,6 +1,6 @@
 # CDR Mapper
 
-An application that plots towers from call detail record (CDR) data to a map file (kml).
+An application that plots towers from call detail record (CDR) data to a map file (kml). It can be used to assist users conducting historical cell site and sector analysis.
 
 Currently it accepts CDR data where the cell sites / towers and CDRs are provided in separate files or where they are in the same row, but where the cell site identifiers are unique to a single network element. See 'future goals' for expansion plans for additional types of data.
 
