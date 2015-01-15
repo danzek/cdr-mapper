@@ -12,7 +12,6 @@ This branch uses `easy_gui v0.97` to provide a simple GUI interface. The master 
 
 ## Future Goals
 
- - Support simpler formats where tower location data are available in the same file and row as each CDR.
  - Add option to plot both originating and terminating cell sites / towers.
  - Parse date/time fields as date objects to allow for time span slider.
  - Accept data where towers and CDRs span multiple network elements / switches, allowing user to specify which network element names correspond to specific switch names.
