@@ -309,6 +309,7 @@ class CDR(object):
             from CDR
             where CDR_Case_ID=?
               and CDR_Cell_Site_ID != ''
+              and CDR_Cell_Site_ID != 'NA'
               and CDR_Cell_Site_ID is not null
             order by CDR_ID;""", (case_id,))
         records = cur.fetchall()
@@ -317,17 +318,87 @@ class CDR(object):
         return [row[0] for row in records]
 
     @staticmethod
-    def generate_cdata(pk, case_id):
+    def generate_cdata(pk, case_id, latitude=None, longitude=None, other_fields=None):
         """
         Generates CDATA (XML Character Data) that pops up in description of points on the map
         :param pk: primary key of CDR record
         :param case_id: primary key of TollsCase object (case_unique_id)
         :return: CDATA as string (including header and footer CDATA tags)
         """
-        cdr_details = CDR.get_cdr_details(pk, case_id)
-        tower_details = Tower.get_tower_location(case_id, cdr_details['Cell Site ID'], cdr_details['Sector'])
         cdata_header = "<![CDATA[ <table border='0' cellspacing='0' cellpadding='0'>"
-        cdata_fixed = """
+
+        if not latitude or not longitude or not other_fields:
+            cdr_details = CDR.get_cdr_details(pk, case_id)
+            tower_details = Tower.get_tower_location(case_id, cdr_details['Cell Site ID'], cdr_details['Sector'])
+            other_fields = cdr_details['Other Fields']
+
+            cdata_fixed = """
+                <tr>
+                    <td colspan='2' style='vertical-align: top; padding-left: 10px; padding-right: 10px; white-space: nowrap;'>
+                        <b>{cdr_id}</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan='2' style='vertical-align: top; padding-left: 10px; padding-right: 10px; max-width: 400px; white-space: nowrap;'>
+                        &nbsp;
+                    </td>
+                </tr>
+                <tr bgcolor='#ddffdd'>
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Called Number</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {callednum}
+                    </td>
+                </tr>
+                <tr>
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Cell Site</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {cellsite}
+                    </td>
+                </tr>
+                <tr bgcolor='#ddffdd' >
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Sector</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {sector}
+                    </td>
+                </tr>
+                <tr>
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Azimuth</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {azimuth}
+                    </td>
+                </tr>
+                <tr bgcolor='#ddffdd' >
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Latitude</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {latitude}
+                    </td>
+                </tr>
+                <tr>
+                    <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
+                        <b>Longitude</b>
+                    </td>
+                    <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
+                        {longitude}
+                    </td>
+                </tr>""".format(cdr_id=str(pk),
+                                callednum=Report.xml_safe(cdr_details['Called Number']),
+                                cellsite=Report.xml_safe(cdr_details['Cell Site ID']),
+                                sector=Report.xml_safe(cdr_details['Sector']),
+                                azimuth=Report.xml_safe(tower_details['Azimuth']),
+                                latitude=Report.xml_safe(tower_details['Latitude']),
+                                longitude=Report.xml_safe(tower_details['Longitude']))
+        else:
+            cdata_fixed = """
             <tr>
                 <td colspan='2' style='vertical-align: top; padding-left: 10px; padding-right: 10px; white-space: nowrap;'>
                     <b>{cdr_id}</b>
@@ -338,44 +409,12 @@ class CDR(object):
                     &nbsp;
                 </td>
             </tr>
-            <tr bgcolor='#ddffdd'>
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Called Number</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {callednum}
-                </td>
-            </tr>
-            <tr>
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Cell Site</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {cellsite}
-                </td>
-            </tr>
-            <tr bgcolor='#ddffdd' >
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Sector</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {sector}
-                </td>
-            </tr>
-            <tr>
-                <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
-                    <b>Azimuth</b>
-                </td>
-                <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {azimuth}
-                </td>
-            </tr>
             <tr bgcolor='#ddffdd' >
                 <td style='vertical-align: top; padding-left: 10px; white-space: nowrap;'>
                     <b>Latitude</b>
                 </td>
                 <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {latitude}
+                    {lat}
                 </td>
             </tr>
             <tr>
@@ -383,20 +422,14 @@ class CDR(object):
                     <b>Longitude</b>
                 </td>
                 <td style='vertical-align: top; padding-left: 6px; padding-right: 10px; white-space: nowrap;'>
-                    {longitude}
+                    {longi}
                 </td>
-            </tr>""".format(cdr_id=str(pk),
-                            callednum=Report.xml_safe(cdr_details['Called Number']),
-                            cellsite=Report.xml_safe(cdr_details['Cell Site ID']),
-                            sector=Report.xml_safe(cdr_details['Sector']),
-                            azimuth=Report.xml_safe(tower_details['Azimuth']),
-                            latitude=Report.xml_safe(tower_details['Latitude']),
-                            longitude=Report.xml_safe(tower_details['Longitude']))
+            </tr>""".format(cdr_id=str(pk), lat=Report.xml_safe(latitude), longi=Report.xml_safe(longitude))
 
         # add other fields selected by user for inclusion in report
         cdata_addtl = ""
         i = 1
-        for k, v in cdr_details['Other Fields'].iteritems():
+        for k, v in other_fields.iteritems():
             if i % 2 == 0:
                 tr_header = "<tr>"
             else:
@@ -422,8 +455,9 @@ class Report(object):
     """
     Report object which combines data from multiple sources.
     """
-    def __init__(self, case_id, report_path):
+    def __init__(self, case_id, same_file, report_path):
         self.case_id = case_id
+        self.same_file = same_file
         self.report_path = report_path
         self.report_name = self.get_report_name()
 
@@ -443,11 +477,7 @@ class Report(object):
         fn = ''.join([c for c in case_number if c in valid_chars])
         return ''.join([fn, '.kml'])
 
-    def generate_map(self):
-        """
-        Generates kml map file, linking tower and CDR data as needed
-        :return: file path of map file
-        """
+    def get_kml_header(self):
         case_details = TollsCase.get_case_details(self.case_id)
         kml_header = """
         <?xml version="1.0" encoding="UTF-8" ?>
@@ -540,59 +570,86 @@ class Report(object):
                                    agency=self.xml_safe(case_details['Agency']),
                                    agent=self.xml_safe(case_details['Agent']),
                                    analyst=self.xml_safe(case_details['Analyst']))
+        return kml_header
+
+    @staticmethod
+    def has_value(coordinate):
+        if not coordinate or coordinate.strip() == '' or coordinate.strip() == 'NA':
+            return False
+        else:
+            return True
+
+    def get_placemarks_for_same_file(self, report_data):
+        placemark_data = ""
+        for cdr_id, data in report_data.iteritems():
+            if self.has_value(data['Latitude']) and self.has_value(data['Longitude']):
+                placemark_data += self.generate_placemark(cdr_id, data['Latitude'], data['Longitude'],
+                                                          data['Other Fields'])
+        return placemark_data
+
+    def get_placemarks_for_separate_files(self):
+        cdrs_with_location_data = CDR.get_cdrs_with_location_data(self.case_id)
+        placemark_data = ""
+        for cdr_id in cdrs_with_location_data:
+            cdr_details = CDR.get_cdr_details(cdr_id, self.case_id)
+            tower_details = Tower.get_tower_location(self.case_id,
+                                                     cdr_details['Cell Site ID'],
+                                                     cdr_details['Sector'])
+            placemark_data += self.generate_placemark(cdr_id, tower_details['Latitude'], tower_details['Longitude'],
+                                                      cdr_details['Other Fields'])
+        return placemark_data
+
+    def generate_placemark(self, cdr_id, latitude, longitude, other):
+        placemark_data = """
+        <Placemark>
+            <name><![CDATA[ {pk} ]]></name>
+            <Snippet maxLines="0" />
+            <styleUrl>#Map1</styleUrl>
+            <ExtendedData />
+            <LookAt>
+                <longitude>{longitude}</longitude>
+                <latitude>{latitude}</latitude>
+                <range>1000</range>
+                <altitudeMode>relativeToGround</altitudeMode>
+                <tilt>0</tilt>
+                <heading>0</heading>
+            </LookAt>
+            <Point>
+                <altitudeMode>clampToGround</altitudeMode>
+                <extrude>0</extrude>
+                <coordinates>{longitude},{latitude},0</coordinates>
+            </Point>
+            <description>
+                {description}
+            </description>
+        </Placemark>""".format(pk=cdr_id,
+                               longitude=self.xml_safe(longitude),
+                               latitude=self.xml_safe(latitude),
+                               description=CDR.generate_cdata(cdr_id, self.case_id, latitude=latitude,
+                                                              longitude=longitude, other_fields=other))
+        return placemark_data
+
+    def generate_map(self, data=None):
+        """
+        Generates kml map file, linking tower and CDR data as needed
+        :return: file path of map file
+        """
+        kml_header = self.get_kml_header()
         kml_footer = """
             </Document>
         </kml>"""
 
-        cdrs_with_location_data = CDR.get_cdrs_with_location_data(self.case_id)
+        if not self.same_file:
+            placemarks = self.get_placemarks_for_separate_files()
+        else:
+            if not data:
+                raise TypeError("Missing map data")
+            else:
+                placemarks = self.get_placemarks_for_same_file(data)
 
         with open(os.path.join(self.report_path, self.report_name), 'wb') as f:
             f.write(self.strip_whitespace(kml_header))
-
-            for cdr_id in cdrs_with_location_data:
-                cdr_details = CDR.get_cdr_details(cdr_id, self.case_id)
-                tower_details = Tower.get_tower_location(self.case_id,
-                                                         cdr_details['Cell Site ID'],
-                                                         cdr_details['Sector'])
-                # not an essential feature -- for future expansion
-                # timespan_data = ''
-                # if cdr_details['Start Date'] and cdr_details['Start Date'].strip() != '' and cdr_details['End Date'] \
-                #         and cdr_details['End Date'].strip() != '':
-                #     timespan_data = """
-                #     <TimeSpan>
-                #         <begin>2013-06-15T09:20:00Z</begin>
-                #         <end>2013-06-15T09:31:00Z</end>
-                #     </TimeSpan>"""
-
-                placemark_data = """
-                <Placemark>
-                    <name><![CDATA[ {pk} ]]></name>
-                    <Snippet maxLines="0" />
-                    <styleUrl>#Map1</styleUrl>
-                    <ExtendedData />
-                    <LookAt>
-                        <longitude>{longitude}</longitude>
-                        <latitude>{latitude}</latitude>
-                        <range>1000</range>
-                        <altitudeMode>relativeToGround</altitudeMode>
-                        <tilt>0</tilt>
-                        <heading>0</heading>
-                    </LookAt>
-                    <Point>
-                        <altitudeMode>clampToGround</altitudeMode>
-                        <extrude>0</extrude>
-                        <coordinates>{longitude},{latitude},0</coordinates>
-                    </Point>
-                    <description>
-                        {description}
-                    </description>
-                </Placemark>""".format(pk=cdr_id,
-                                       longitude=self.xml_safe(tower_details['Longitude']),
-                                       latitude=self.xml_safe(tower_details['Latitude']),
-                                       description=CDR.generate_cdata(cdr_id, self.case_id))
-
-                f.write(self.strip_whitespace(placemark_data))
-
+            f.write(self.strip_whitespace(placemarks))
             f.write(self.strip_whitespace(kml_footer))
 
         return os.path.join(self.report_path, self.report_name)

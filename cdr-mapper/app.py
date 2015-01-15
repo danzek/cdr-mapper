@@ -234,6 +234,32 @@ def import_cdrs(case_id):
     easygui.msgbox(msg='CDRs imported successfully.', title="Success")
 
 
+def save_report(case_id, report_data=None):
+    save_location = get_save_location("Please select the folder where you want to save the report.")
+    if not report_data:
+        final_report = Report(case_id, False, save_location)
+    else:
+        final_report = Report(case_id, True, save_location)
+
+    report_name = None
+    i = 0
+    while not report_name:
+        try:
+            i += 1
+            if not report_data:
+                report_name = final_report.generate_map()
+            else:
+                report_name = final_report.generate_map(data=report_data)
+        except IOError:
+            easygui.msgbox(msg="There was an error writing the report file.")
+            report_name = get_file("Please select the location where you wish to save the report again.")
+            if i > 1:
+                easygui.exceptionbox()
+                sys.exit(0)
+
+    easygui.msgbox(msg=' '.join(["Report successfully saved to", report_name]), title="Success")
+
+
 def parse_same_file(case_id):
     """
     Handles report when CDRs and cell sites / towers are in same file
@@ -242,7 +268,48 @@ def parse_same_file(case_id):
     """
     data = get_file("Please select the CSV file containing the CDR and tower data.")
     headers = get_csv_headers(data)
-    # TODO -- select headers from imported data
+    latitude = None
+    longitude = None
+    other_fields = None
+    report_data = {}
+
+    # get headers
+    while not latitude:
+        latitude = easygui.choicebox("Select the column heading that corresponds to the latitude.",
+                                     title="Get Latitude", choices=headers)
+
+    while not longitude:
+        longitude = easygui.choicebox("Select the column heading that corresponds to the longitude.",
+                                      title="Get Longitude", choices=headers)
+
+    while not other_fields:
+        other_fields = easygui.multchoicebox(' '.join(["Select all of the columns you wish to appear in the",
+                                                       "description for each point on the map."]),
+                                             title="Get Report Fields", choices=headers)
+
+    # populate variables with index for each header column
+    i_latitude = headers.index(latitude)
+    i_longitude = headers.index(longitude)
+    knowns = [i_latitude, i_longitude]
+    d_other_fields = {of: headers.index(of) for of in other_fields if headers.index(of) not in knowns
+                      and of.strip() != ''}  # remove knowns
+
+    with open(data, 'rb') as f:
+        f_csv = csv.reader(f)
+        discarded_headers = next(f_csv)
+        i = 1
+        for row in f_csv:
+            report_fields = {}
+            other = {}
+            for k, v in d_other_fields.iteritems():
+                other[k] = row[v]
+            report_fields['Other Fields'] = other
+            report_fields['Latitude'] = row[i_latitude]
+            report_fields['Longitude'] = row[i_longitude]
+            report_data[i] = report_fields
+            i += 1
+
+    save_report(case_id, report_data=report_data)
 
 
 def parse_two_files(case_id):
@@ -253,23 +320,7 @@ def parse_two_files(case_id):
     """
     import_tower_data(case_id)
     import_cdrs(case_id)
-    save_location = get_save_location("Please select the folder where you want to save the report.")
-    final_report = Report(case_id, save_location)
-
-    report_name = None
-    i = 0
-    while not report_name:
-        try:
-            i += 1
-            report_name = final_report.generate_map()
-        except IOError:
-            easygui.msgbox(msg="There was an error writing the report file.")
-            report_name = get_file("Please select the location where you wish to save the report again.")
-            if i > 1:
-                easygui.exceptionbox()
-                sys.exit(0)
-
-    easygui.msgbox(msg=' '.join(["Report successfully saved to", report_name]), title="Success")
+    save_report(case_id)
 
 
 def main():
