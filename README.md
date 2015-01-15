@@ -4,7 +4,9 @@ An application that plots towers from call detail record (CDR) data to a map fil
 
 Currently it accepts CDR data where the cell sites / towers and CDRs are provided in separate files or where they are in the same row, but where the cell site identifiers are unique to a single network element. See 'future goals' for expansion plans for additional types of data.
 
-This branch uses `easy_gui v0.97` to provide a simple GUI interface. The master branch is a Flask web application.
+This branch uses `easy_gui v0.97` to provide a simple GUI interface. [The master branch](https://github.com/danzek/cdr-mapper/tree/master) is a Flask web application.
+
+I have uploaded [a Windows installer](https://github.com/danzek/cdr-mapper/tree/gui/installer) for the GUI branch.
 
 ## License
 
