@@ -14,7 +14,7 @@ I have uploaded [a Windows installer](https://github.com/danzek/cdr-mapper/tree/
 
 ## Future Goals
 
- - Add option to plot both originating and terminating cell sites / towers.
+ - Add option to plot both originating and terminating cell sites / towers (currently you just can run the data through twice, once for originating and again for terminating, being sure to save the files in such a way that the distinction is maintained; Google Earth allows you to view multiple map files simultaneously).
  - Parse date/time fields as date objects to allow for time span slider.
  - Accept data where towers and CDRs span multiple network elements / switches, allowing user to specify which network element names correspond to specific switch names.
  - Visually show azimuth and approximate sector coverage in map file (without committing errors of the 'granularization theory').<sup>1</sup>
