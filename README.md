@@ -14,6 +14,7 @@ I have uploaded [a Windows installer](https://github.com/danzek/cdr-mapper/tree/
 
 ## Future Goals
 
+ - Parse different latitude and longitude formats (currently only accepts signed degrees format).
  - Add option to plot both originating and terminating cell sites / towers (currently you just can run the data through twice, once for originating and again for terminating, being sure to save the files in such a way that the distinction is maintained; Google Earth allows you to view multiple map files simultaneously).
  - Parse date/time fields as date objects to allow for time span slider.
  - Accept data where towers and CDRs span multiple network elements / switches, allowing user to specify which network element names correspond to specific switch names.
