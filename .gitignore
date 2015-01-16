@@ -7,4 +7,6 @@ installer/cdrmapper
 
 installer/setup.iss
 
+installer/user_manual
+
 src/.idea
