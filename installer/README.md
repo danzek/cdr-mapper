@@ -1,6 +1,6 @@
 # CDRMapper Installer
 
- - **[Setup / Installer File](https://github.com/danzek/cdr-mapper/blob/gui/installer/cdrmapper_setup.exe?raw=true)**
+ - **[Setup / Installer File (Windows)](https://github.com/danzek/cdr-mapper/blob/gui/installer/cdrmapper_setup.exe?raw=true)**
  - **[User Manual](https://github.com/danzek/cdr-mapper/blob/gui/installer/cdrmapper_user_manual.pdf?raw=true)**
 
 This Windows installer will automatically install the CDRMapper GUI application on your system. There are detailed instructions in [the user manual](https://github.com/danzek/cdr-mapper/blob/gui/installer/cdrmapper_user_manual.pdf?raw=true).
